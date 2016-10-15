@@ -7,10 +7,10 @@ import android.util.Log;
  * Created by zhangdroid on 2016/7/1.
  */
 public class LogUtil {
-    private static boolean isPrintLog = true;
-
-    public static final String TAG_WHC = "WHC";
-    public static final String TAG_LMF = "LMF";
+    /**
+     * Set this to false when release your app
+     */
+    private static final boolean isPrintLog = true;
     public static final String TAG_ZL = "zhangdroid";
 
     public static void v(String tag, String msg) {

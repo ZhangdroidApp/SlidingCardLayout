@@ -51,7 +51,7 @@ public abstract class CommonAbsListViewAdapter<T> extends BaseAdapter {
     /**
      * 清空数据
      */
-    public void removeAll() {
+    public void clear() {
         if (!Util.isListEmpty(mDataList)) {
             mDataList.clear();
             notifyDataSetChanged();

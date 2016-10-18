@@ -2,10 +2,13 @@ package com.demo;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.view.View;
+import android.widget.Toast;
 
 import com.demo.adapter.CardAdapter;
 import com.demo.entity.CardModel;
 import com.zhangdroid.R;
+import com.zhangdroid.library.utils.LogUtil;
 import com.zhangdroid.widgets.SlidingCardLayout;
 
 import java.util.ArrayList;
@@ -24,6 +27,61 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
+        final CardAdapter cardAdapter = new CardAdapter(this, R.layout.item_cardview, createDataList());
+        mSlidingCardLayout.setAdapter(cardAdapter);
+        mSlidingCardLayout.setOnCardSlideListener(new SlidingCardLayout.OnCardSlidingListener() {
+
+            @Override
+            public void removeFirstObjInAdapter() {
+                cardAdapter.removeItem(0);
+            }
+
+            @Override
+            public void onAdapterApproachInEmpty(int adapterDataCount) {
+                cardAdapter.appendToList(createDataList());
+            }
+
+            @Override
+            public void onLeftDisappear(Object itemObj) {
+                CardModel cardModel = (CardModel) itemObj;
+                LogUtil.i(LogUtil.TAG_ZL, cardModel.toString());
+                Toast.makeText(MainActivity.this, "left slide " + cardModel.getNickname(), Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onRightDisappear(Object itemObj) {
+                CardModel cardModel = (CardModel) itemObj;
+                LogUtil.i(LogUtil.TAG_ZL, cardModel.toString());
+                Toast.makeText(MainActivity.this, "right slide " + cardModel.getNickname(), Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onScroll(int scrollPercent) {
+
+            }
+
+        });
+        mSlidingCardLayout.setOnCardItemClickListener(new SlidingCardLayout.OnCardItemClickListener() {
+            @Override
+            public void onCardViewClick(View view, Object itemObj) {
+                CardModel cardModel = (CardModel) itemObj;
+                LogUtil.i(LogUtil.TAG_ZL, cardModel.toString());
+                Toast.makeText(MainActivity.this, "点击了 " + cardModel.getNickname(), Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private CardModel createModel(String nickname, int age, String location, String thumbnailUrl) {
+        CardModel cardModel = new CardModel();
+        cardModel.setNickname(nickname);
+        cardModel.setAge(age);
+        cardModel.setLocation(location);
+        cardModel.setThumbnailUrl(thumbnailUrl);
+        cardModel.setImgCnt(new Random().nextInt(10));
+        return cardModel;
+    }
+
+    private List<CardModel> createDataList() {
         List<CardModel> list = new ArrayList<CardModel>();
         list.add(createModel("妹子1", 18, "北京", "http://c.hiphotos.baidu.com/image/h%3D360/sign=2b7f667d39c79f3d90e1e2368aa0cdbc/f636afc379310a55515bfd76b54543a982261030.jpg"));
         list.add(createModel("妹子2", 19, "北京", "http://f.hiphotos.baidu.com/image/h%3D360/sign=827c3174af345982da8ae3943cf5310b/9358d109b3de9c82c4f95c8f6e81800a19d84315.jpg"));
@@ -45,18 +103,7 @@ public class MainActivity extends AppCompatActivity {
 //        list.add(createModel("妹子18", 19, "杭州", ""));
 //        list.add(createModel("妹子19", 20, "杭州", ""));
 //        list.add(createModel("妹子20", 21, "杭州", ""));
-        CardAdapter cardAdapter = new CardAdapter(this, R.layout.item_cardview, list);
-        mSlidingCardLayout.setAdapter(cardAdapter);
-    }
-
-    private CardModel createModel(String nickname, int age, String location, String thumbnailUrl) {
-        CardModel cardModel = new CardModel();
-        cardModel.setNickname(nickname);
-        cardModel.setAge(age);
-        cardModel.setLocation(location);
-        cardModel.setThumbnailUrl(thumbnailUrl);
-        cardModel.setImgCnt(new Random().nextInt(10));
-        return cardModel;
+        return list;
     }
 
 }

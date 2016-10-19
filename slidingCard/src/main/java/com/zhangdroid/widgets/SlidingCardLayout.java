@@ -1,5 +1,7 @@
 package com.zhangdroid.widgets;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.content.Context;
 import android.database.DataSetObserver;
 import android.graphics.Point;
@@ -10,6 +12,7 @@ import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
+import android.view.animation.AccelerateInterpolator;
 import android.widget.BaseAdapter;
 import android.widget.FrameLayout;
 
@@ -28,6 +31,7 @@ public class SlidingCardLayout extends FrameLayout {
      * 默认可见的子view个数
      */
     private static final int DEFAULT_VISIBLE_CHILDVIEW_COUNT = 3;
+
     /**
      * X方向上滑动的阙值
      */
@@ -40,11 +44,12 @@ public class SlidingCardLayout extends FrameLayout {
      * 判定为抛飞动作的最小速度
      */
     private int mMinFlingVelocity;
-
     /**
      * 拖拽工具类
      */
     private ViewDragHelper mViewDragHelper;
+
+    private boolean mIsInLayout = false;
     /**
      * 当前处于最顶部的卡片
      */
@@ -53,6 +58,10 @@ public class SlidingCardLayout extends FrameLayout {
      * 可见子view的个数
      */
     private int mVisibleViewCount;
+    /**
+     * adapter中缓冲保存子view栈的大小
+     */
+    private int mAdapterStackSize;
     /**
      * 是否显示堆叠的结构
      */
@@ -98,6 +107,7 @@ public class SlidingCardLayout extends FrameLayout {
     public SlidingCardLayout(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         init(context);
+        mAdapterStackSize = 2 * DEFAULT_VISIBLE_CHILDVIEW_COUNT;
     }
 
     private void init(Context context) {
@@ -136,22 +146,24 @@ public class SlidingCardLayout extends FrameLayout {
 
     @Override
     protected void onLayout(boolean changed, int l, int t, int r, int b) {
+        if (mIsInLayout) {
+            return;
+        }
+        mIsInLayout = true;
         if (mBaseAdapter != null) {
             int adapterCount = mBaseAdapter.getCount();
             if (adapterCount > 0) {
-                // 计算当前需要添加的子view的个数（栈的大小为可见子view的2倍）
-                int child_view_stack = Math.min(2 * DEFAULT_VISIBLE_CHILDVIEW_COUNT, adapterCount);
+                // 计算当前需要添加的子view的个数
+                int child_view_stack = Math.min(mAdapterStackSize, adapterCount);
                 // 所有的子view按照从上到下的顺序堆叠放置
-                for (int pos = child_view_stack - 1; pos >= 0; pos--) {
-                    View childView = mBaseAdapter.getView(pos, null, this);
+                for (int pos = 0; pos < child_view_stack; pos++) {
+                    View childView = getChildAt(pos);
                     if (childView != null) {
-                        FrameLayout.LayoutParams layoutParams = (LayoutParams) childView.getLayoutParams();
-                        addViewInLayout(childView, -1, layoutParams);
                         int left = getPaddingLeft();
                         int top = getPaddingTop();
                         childView.layout(left, top, left + childView.getMeasuredWidth(), top + childView.getMeasuredHeight());
-                        childView.offsetTopAndBottom(40);
-                        childView.offsetLeftAndRight(30);
+//                        childView.offsetTopAndBottom(40);
+//                        childView.offsetLeftAndRight(30);
                     }
                 }
                 // 设置当前顶部卡片view
@@ -160,7 +172,10 @@ public class SlidingCardLayout extends FrameLayout {
                 removeAllViewsInLayout();
             }
 
-            if (adapterCount <= 2 * DEFAULT_VISIBLE_CHILDVIEW_COUNT && mOnCardSlidingListener != null) {
+            mIsInLayout = false;
+
+            LogUtil.e(TAG, "onLayout() mAdapterStackSize = " + mAdapterStackSize + "  adapterCount = " + adapterCount);
+            if (adapterCount <= mAdapterStackSize && mOnCardSlidingListener != null) {
                 mOnCardSlidingListener.onAdapterApproachInEmpty(adapterCount);
             }
         }
@@ -168,6 +183,7 @@ public class SlidingCardLayout extends FrameLayout {
 
     private void setupTopCardView() {
         final int childCount = getChildCount();
+        LogUtil.e(TAG, "setupTopCardView() childCount = " + childCount);
         if (childCount > 0) {
             mTopCardView = getChildAt(childCount - 1);
             if (mTopCardView != null) {
@@ -259,7 +275,13 @@ public class SlidingCardLayout extends FrameLayout {
                 finalLeft = getWidth();
                 finalTop = topCardView.getTop();
             }
-            mViewDragHelper.settleCapturedViewAt(finalLeft, finalTop);
+            mViewDragHelper.smoothSlideViewTo(topCardView, finalLeft, finalTop);
+
+            // 移除当前顶部卡片view并从adapter中添加一个子view到末尾
+            mReleasedViewList.add(topCardView);
+            removeView(topCardView);
+            addChildToLast();
+
             if (mOnCardSlidingListener != null) {
                 Object itemObj = new Object();
                 if (mBaseAdapter != null) {
@@ -272,38 +294,6 @@ public class SlidingCardLayout extends FrameLayout {
                 }
                 mOnCardSlidingListener.removeFirstObjInAdapter();
             }
-
-            mReleasedViewList.add(topCardView);
-            removeViewInLayout(topCardView);
-            setupTopCardView();
-            requestLayout();
-
-            /*topCardView.animate()
-                    .setDuration(200)
-                    .x(targetX)
-                    .y(targetY)
-                    .setInterpolator(new AccelerateInterpolator())
-                    .alpha(0.75f)
-                    .setListener(new AnimatorListenerAdapter() {
-
-                        @Override
-                        public void onAnimationEnd(Animator animation) {
-                            if (mOnCardSlidingListener != null) {
-                                if (velocityX < 0) {
-                                    mOnCardSlidingListener.onLeftDisappear(mBaseAdapter == null ? null : mBaseAdapter.getItem(0));
-                                } else {
-                                    mOnCardSlidingListener.onRightDisappear(mBaseAdapter == null ? null : mBaseAdapter.getItem(0));
-                                }
-                            }
-                            removeViewInLayout(topCardView);
-                            setupTopCardView();
-                        }
-
-                        @Override
-                        public void onAnimationCancel(Animator animation) {
-                            onAnimationEnd(animation);
-                        }
-                    });*/
         } else {// 否则松开TopCardView后回到原位置
             if (mViewDragHelper.smoothSlideViewTo(topCardView, finalLeft, finalTop)) {
                 ViewCompat.postInvalidateOnAnimation(SlidingCardLayout.this);
@@ -311,6 +301,42 @@ public class SlidingCardLayout extends FrameLayout {
         }
     }
 
+    /**
+     * 从adapter中添加一个view至FrameLayout的末尾(若adapter已没有待添加的view，则不做处理)
+     */
+    private void addChildToLast() {
+        if (mBaseAdapter != null) {
+            int adapterCount = mBaseAdapter.getCount();
+            int index = getChildCount();
+            if (adapterCount - index > 0) {// adapter中还有未添加过的子view
+                View childView = mBaseAdapter.getView(index + 1, null, this);
+                LogUtil.e(TAG, "addChildToLast() index = " + index + " childView is null = " + (childView == null));
+                if (childView != null) {
+                    FrameLayout.LayoutParams layoutParams = (LayoutParams) childView.getLayoutParams();
+                    addViewInLayout(childView, 0, layoutParams);
+                }
+            }
+        }
+    }
+
+    private void attachChildViews() {
+        LogUtil.e(TAG, "attachChildViews()");
+        if (mBaseAdapter != null) {
+            int adapterCount = mBaseAdapter.getCount();
+            if (adapterCount > 0) {
+                // 计算当前需要添加的子view的个数
+                int child_view_stack = Math.min(mAdapterStackSize, adapterCount);
+                // 所有的子view按照从上到下的顺序堆叠放置
+                for (int pos = child_view_stack - 1; pos >= 0; pos--) {
+                    View childView = mBaseAdapter.getView(pos, null, this);
+                    if (childView != null) {
+                        FrameLayout.LayoutParams layoutParams = (LayoutParams) childView.getLayoutParams();
+                        addViewInLayout(childView, -1, layoutParams);
+                    }
+                }
+            }
+        }
+    }
 
     // *************************************** Public methods ***************************************
 
@@ -318,6 +344,7 @@ public class SlidingCardLayout extends FrameLayout {
     /**
      * @return the selected top card view
      */
+
     public View getTopCardView() {
         return mTopCardView;
     }
@@ -331,7 +358,62 @@ public class SlidingCardLayout extends FrameLayout {
         this.mVisibleViewCount = visibleViewCount;
     }
 
+    public void flingToLeft() {
+        flingToLeft(200);
+    }
+
+    public void flingToLeft(int duration) {
+        if (mTopCardView != null) {
+            mTopCardView.animate()
+                    .setDuration(duration)
+                    .setInterpolator(new AccelerateInterpolator())
+                    .x(-mTopCardView.getWidth())
+                    .y(mTopCardView.getTop())
+                    .rotation(45)
+                    .alpha(0.8f)
+                    .setListener(new AnimatorListenerAdapter() {
+
+                        @Override
+                        public void onAnimationEnd(Animator animation) {
+                            if (mOnCardSlidingListener != null) {
+                                mOnCardSlidingListener.onLeftDisappear(mBaseAdapter == null ? null : mBaseAdapter.getItem(0));
+                            }
+                        }
+                    });
+        }
+    }
+
+    public void flingToRight() {
+        flingToRight(200);
+    }
+
+    public void flingToRight(int duration) {
+        if (mTopCardView != null) {
+            mTopCardView.animate()
+                    .setDuration(duration)
+                    .setInterpolator(new AccelerateInterpolator())
+                    .x(getWidth())
+                    .y(mTopCardView.getTop())
+                    .rotation(-45)
+                    .alpha(0.8f)
+                    .setListener(new AnimatorListenerAdapter() {
+
+                        @Override
+                        public void onAnimationEnd(Animator animation) {
+                            if (mOnCardSlidingListener != null) {
+                                mOnCardSlidingListener.onRightDisappear(mBaseAdapter == null ? null : mBaseAdapter.getItem(0));
+                            }
+                        }
+                    });
+        }
+    }
+
+    public void revertToLast() {
+
+    }
+
     public void setAdapter(BaseAdapter baseAdapter) {
+        LogUtil.e(TAG, "setAdapter()");
         if (baseAdapter == null) {
             throw new IllegalArgumentException("The param baseAdapter cannot be null.");
         }
@@ -340,7 +422,7 @@ public class SlidingCardLayout extends FrameLayout {
         }
         mBaseAdapter = baseAdapter;
         mBaseAdapter.registerDataSetObserver(mDataSetObserver);
-        requestLayout();
+        attachChildViews();
     }
 
     public BaseAdapter getAdapter() {

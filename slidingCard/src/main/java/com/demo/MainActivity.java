@@ -10,7 +10,7 @@ import com.demo.adapter.CardAdapter;
 import com.demo.entity.CardModel;
 import com.zhangdroid.R;
 import com.zhangdroid.library.utils.LogUtil;
-import com.zhangdroid.widgets.SlidingCardLayout;
+import com.zhangdroid.library.widgets.SlidingCardLayout;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,30 +37,34 @@ public class MainActivity extends AppCompatActivity {
         ButterKnife.bind(this);
         final CardAdapter cardAdapter = new CardAdapter(this, R.layout.item_cardview, createDataList());
         mSlidingCardLayout.setAdapter(cardAdapter);
-        mSlidingCardLayout.setOnCardSlideListener(new SlidingCardLayout.OnCardSlidingListener() {
+        mSlidingCardLayout.setOnCardSlidingListener(new SlidingCardLayout.OnCardSlidingListener() {
 
             @Override
             public void removeFirstObjInAdapter() {
+                LogUtil.i(LogUtil.TAG_ZL, "removeFirstObjInAdapter()");
                 cardAdapter.removeItem(0);
             }
 
             @Override
             public void onAdapterApproachInEmpty(int adapterDataCount) {
+                LogUtil.i(LogUtil.TAG_ZL, "onAdapterApproachInEmpty() adapterDataCount = " + adapterDataCount);
                 cardAdapter.appendToList(createDataList());
             }
 
             @Override
             public void onLeftDisappear(Object itemObj) {
                 CardModel cardModel = (CardModel) itemObj;
-                LogUtil.i(LogUtil.TAG_ZL, cardModel.toString());
-                Toast.makeText(MainActivity.this, "left slide " + cardModel.getNickname(), Toast.LENGTH_SHORT).show();
+                if (cardModel != null) {
+                    LogUtil.i(LogUtil.TAG_ZL, "onLeftDisappear() " + cardModel.toString());
+                }
             }
 
             @Override
             public void onRightDisappear(Object itemObj) {
                 CardModel cardModel = (CardModel) itemObj;
-                LogUtil.i(LogUtil.TAG_ZL, cardModel.toString());
-                Toast.makeText(MainActivity.this, "right slide " + cardModel.getNickname(), Toast.LENGTH_SHORT).show();
+                if (cardModel != null) {
+                    LogUtil.i(LogUtil.TAG_ZL, "onRightDisappear() " + cardModel.toString());
+                }
             }
 
             @Override
@@ -77,6 +81,29 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(MainActivity.this, "点击了 " + cardModel.getNickname(), Toast.LENGTH_SHORT).show();
             }
         });
+
+        if (mSlidingCardLayout.canRevertToLast()) {
+            mIvBack.setVisibility(View.VISIBLE);
+        } else {
+            mIvBack.setVisibility(View.GONE);
+        }
+
+        mSlidingCardLayout.setOnRevertListener(new SlidingCardLayout.OnRevertListener() {
+
+            @Override
+            public void onRevertInAdapter(int index, Object revertViewDataObj) {
+                cardAdapter.addItem(index, (CardModel) revertViewDataObj);
+            }
+
+            @Override
+            public void onRevertStateChanged(boolean canRevert) {
+                if (canRevert) {
+                    mIvBack.setVisibility(View.VISIBLE);
+                } else {
+                    mIvBack.setVisibility(View.GONE);
+                }
+            }
+        });
     }
 
     @OnClick({R.id.dislike, R.id.back_to_last, R.id.like})
@@ -87,6 +114,7 @@ public class MainActivity extends AppCompatActivity {
                 break;
 
             case R.id.back_to_last:
+                mSlidingCardLayout.revertToLast();
                 break;
 
             case R.id.like:
@@ -121,12 +149,12 @@ public class MainActivity extends AppCompatActivity {
         list.add(createModel("妹子12", 20, "深圳", "http://c.hiphotos.baidu.com/image/h%3D360/sign=2bd759df74094b36c4921deb93cd7c00/810a19d8bc3eb135298010bba41ea8d3fd1f446e.jpg"));
         list.add(createModel("妹子13", 18, "安庆", "http://g.hiphotos.baidu.com/image/h%3D360/sign=45a1fdfbfa1986185e47e9827aec2e69/7acb0a46f21fbe099dd9bb8e69600c338644ada1.jpg"));
         list.add(createModel("妹子14", 19, "安庆", "http://b.hiphotos.baidu.com/image/h%3D360/sign=c4f33f61f1deb48fe469a7d8c01f3aef/b812c8fcc3cec3fdc50a0275d488d43f879427fd.jpg"));
-//        list.add(createModel("妹子15", 20, "安庆", ""));
-//        list.add(createModel("妹子16", 21, "安庆", ""));
-//        list.add(createModel("妹子17", 18, "杭州", ""));
-//        list.add(createModel("妹子18", 19, "杭州", ""));
-//        list.add(createModel("妹子19", 20, "杭州", ""));
-//        list.add(createModel("妹子20", 21, "杭州", ""));
+        list.add(createModel("妹子15", 20, "安庆", "http://e.hiphotos.baidu.com/image/h%3D360/sign=882d1c6496eef01f52141ec3d0ff99e0/c2fdfc039245d688e89d17a4a6c27d1ed21b2416.jpg"));
+        list.add(createModel("妹子16", 21, "安庆", "http://c.hiphotos.baidu.com/image/h%3D360/sign=6f842bd5ad51f3dedcb2bf62a4eff0ec/4610b912c8fcc3ce316f2a2c9045d688d43f2006.jpg"));
+        list.add(createModel("妹子17", 18, "杭州", "http://e.hiphotos.baidu.com/image/h%3D360/sign=1ea3e8b4aad3fd1f2909a43c004f25ce/d833c895d143ad4b4d3b3d5a80025aafa40f0616.jpg"));
+        list.add(createModel("妹子18", 19, "杭州", "http://c.hiphotos.baidu.com/image/h%3D360/sign=b1f1dce98f1001e9513c1209880e7b06/a71ea8d3fd1f41348537907e271f95cad1c85ea9.jpg"));
+        list.add(createModel("妹子19", 20, "杭州", "http://b.hiphotos.baidu.com/image/h%3D360/sign=1de5eb04369b033b3388fadc25cf3620/77c6a7efce1b9d1634356c61f1deb48f8d5464c4.jpg"));
+        list.add(createModel("妹子20", 21, "杭州", "http://a.hiphotos.baidu.com/image/h%3D360/sign=f7589b74442309f7f86fab14420f0c39/30adcbef76094b3614bd950da1cc7cd98d109d27.jpg"));
         return list;
     }
 

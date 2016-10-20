@@ -88,6 +88,30 @@ public abstract class CommonAbsListViewAdapter<T> extends BaseAdapter {
         }
     }
 
+    /**
+     * 向指定位置添加item
+     *
+     * @param position 将要添加的位置索引
+     * @param t        将要添加的item数据对象
+     */
+    public void addItem(int position, T t) {
+        if (isValidPosition(position)) {
+            if (!Util.isListEmpty(mDataList)) {
+                mDataList.add(position, t);
+                notifyDataSetChanged();
+            }
+        }
+    }
+
+    /**
+     * 直接向队列末尾添加item
+     *
+     * @param t 将要添加的item数据对象
+     */
+    public void addItem(T t) {
+        addItem(getCount() - 1, t);
+    }
+
     public boolean isValidPosition(int position) {
         return (position >= 0 && position < getCount());
     }

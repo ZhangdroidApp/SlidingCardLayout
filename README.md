@@ -1,2 +1,2 @@
 # SlidingCardLayout
-A layout of card views which can slide around.
+A stacked card view layout which can slide around and revert to the original position.

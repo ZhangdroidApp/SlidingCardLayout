@@ -18,24 +18,24 @@
             android:layout_above="@+id/item_card_bottom"
             android:scaleType="centerCrop" />
 
-        <!--  <ImageView
-              android:id="@+id/item_swipefling_like"
-              android:layout_width="wrap_content"
-              android:layout_height="wrap_content"
-              android:layout_marginLeft="20dp"
-              android:layout_marginTop="20dp"
-              android:alpha="0"
-              android:src="@drawable/interest_yes" />
+        <ImageView
+            android:id="@+id/item_like"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="20dp"
+            android:layout_marginTop="20dp"
+            android:alpha="0"
+            android:src="@drawable/home_card_like" />
 
-          <ImageView
-              android:id="@+id/item_swipefling_dislike"
-              android:layout_width="wrap_content"
-              android:layout_height="wrap_content"
-              android:layout_alignParentRight="true"
-              android:layout_marginRight="20dp"
-              android:layout_marginTop="20dp"
-              android:alpha="0"
-              android:src="@drawable/interest_no" />-->
+        <ImageView
+            android:id="@+id/item_dislike"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_marginRight="20dp"
+            android:layout_marginTop="20dp"
+            android:alpha="0"
+            android:src="@drawable/home_card_dislike" />
 
         <LinearLayout
             android:id="@+id/item_card_bottom"

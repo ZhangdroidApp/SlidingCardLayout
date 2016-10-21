@@ -68,8 +68,19 @@ public class MainActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onScroll(int scrollPercent) {
-
+            public void onScroll(float scrollPercent) {
+                LogUtil.i(LogUtil.TAG_ZL, "onScroll() scrollPercent = " + scrollPercent);
+                if (mSlidingCardLayout != null) {
+                    View topCardView = mSlidingCardLayout.getTopCardView();
+                    if (topCardView != null) {
+                        // 右滑
+                        ImageView ivLike = (ImageView) topCardView.findViewById(R.id.item_like);
+                        ivLike.setAlpha(scrollPercent > 0 ? scrollPercent : 0);
+                        // 左滑
+                        ImageView ivDislike = (ImageView) topCardView.findViewById(R.id.item_dislike);
+                        ivDislike.setAlpha(scrollPercent < 0 ? -scrollPercent : 0);
+                    }
+                }
             }
 
         });

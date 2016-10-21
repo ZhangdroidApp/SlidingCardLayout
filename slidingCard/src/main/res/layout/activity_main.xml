@@ -5,7 +5,7 @@
     android:layout_height="match_parent"
     tools:context="com.demo.MainActivity">
 
-    <com.zhangdroid.library.widgets.SlidingCardLayout
+    <com.library.widgets.SlidingCardLayout
         android:id="@+id/slidingCardLayout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"

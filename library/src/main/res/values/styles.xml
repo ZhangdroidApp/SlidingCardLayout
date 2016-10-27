@@ -1,3 +1,14 @@
 <resources>
 
+    <declare-styleable name="SlidingCardLayout">
+
+        <!-- 设置可见的子view的个数 -->
+        <attr name="visibleCount" format="integer" />
+        <!-- 设置y轴方向上的偏移量步长 -->
+        <attr name="yOffsetStep" format="dimension" />
+        <!-- 设置子view的缩放步长 -->
+        <attr name="scaleStep" format="float" />
+
+    </declare-styleable>
+
 </resources>

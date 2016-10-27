@@ -5,12 +5,12 @@
     android:layout_height="match_parent"
     tools:context="com.demo.MainActivity">
 
-    <com.library.widgets.SlidingCardLayout
+    <com.zhangdroid.library.widgets.SlidingCardLayout
         android:id="@+id/slidingCardLayout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_above="@+id/main_bottom"
-        android:padding="15dp" />
+        android:layout_margin="10dp" />
 
     <RelativeLayout
         android:id="@+id/main_bottom"
@@ -27,7 +27,7 @@
             android:layout_width="60dp"
             android:layout_height="60dp"
             android:layout_centerVertical="true"
-            android:src="@drawable/home_buttons_dislike_normal" />
+            android:src="@drawable/selector_dislike" />
 
         <ImageView
             android:id="@+id/back_to_last"
@@ -42,7 +42,7 @@
             android:layout_height="60dp"
             android:layout_alignParentRight="true"
             android:layout_centerVertical="true"
-            android:src="@drawable/home_buttons_like_normal" />
+            android:src="@drawable/selector_like" />
 
     </RelativeLayout>
 

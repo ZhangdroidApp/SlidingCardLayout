@@ -4,7 +4,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     app:cardBackgroundColor="@android:color/white"
-    app:cardCornerRadius="5dp"
+    app:cardCornerRadius="6dp"
+    app:cardElevation="2dp"
     app:cardUseCompatPadding="true">
 
     <RelativeLayout
@@ -44,10 +45,7 @@
             android:layout_alignParentBottom="true"
             android:gravity="center"
             android:orientation="horizontal"
-            android:paddingBottom="15dp"
-            android:paddingLeft="20dp"
-            android:paddingRight="20dp"
-            android:paddingTop="15dp">
+            android:padding="15dp">
 
             <TextView
                 android:id="@+id/item_card_nickname"
